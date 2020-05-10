@@ -3,8 +3,8 @@ import os
 import re
 
 
-class AnalysisIncludes(object):
-    module_includes = {}
+class IncludesAnalyzer(object):
+    module_includes = dict()
     root_path = ""
     pattern = re.compile(r'include[\s]*["<]([\w\.]*)[">]')
 
@@ -16,6 +16,7 @@ class AnalysisIncludes(object):
             for file in files:
                 (module, ext) = os.path.splitext(file)
                 if ext in [".h", ".c", ".cpp"]:
+                    print("analysis: " + file)
                     includes = self.get_includes(root, file)
                     if module not in self.module_includes.keys():
                         self.module_includes[module] = includes
@@ -23,6 +24,7 @@ class AnalysisIncludes(object):
                         self.module_includes[module] |= includes
                     if module in self.module_includes[module]:
                         self.module_includes[module].remove(module)
+        print("module cnt: %d" % len(self.module_includes))
 
     def get_includes(self, root, file):
         includes = set()
@@ -43,6 +45,7 @@ class AnalysisIncludes(object):
         return label
 
     def generate_includes_graph(self):
+        print("generate relation graph ...")
         g = Digraph("Includes Graph", format="png")
         g.attr(rankdir="LR", ranksep=".75", pad="1", margin="0,0")
         g.attr(
@@ -70,7 +73,7 @@ class AnalysisIncludes(object):
 
 
 if __name__ == "__main__":
-    ais = AnalysisIncludes(os.getcwd())
-    ais.get_module_includes()
-    ais.generate_includes_graph()
+    a = IncludesAnalyzer(os.getcwd())
+    a.get_module_includes()
+    a.generate_includes_graph()
     print("finish!")
